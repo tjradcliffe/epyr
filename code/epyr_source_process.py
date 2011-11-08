@@ -36,19 +36,30 @@ import sys
 import time
 
 # process arguments
+#
+# python epyr_source_process.py nShots strTestFilename strCorrelation strAngleSetting <other>
+#
+# where nShots = -1 for endless
+#       strTestFilename = epyr_test.py or similar
+#       strCorrelation = UNCORRELATED for uncorrelated, anything else gives correlated
+#       strAngleSetting = EPR for 0/45/22.5/67.5, anything else for uniform 0 => tau
+#       
 nShots = -1
 strTestFilename = "epyr_test.py"
 bCorrelated = True
+strAngleSetting = "EPR" # alternative is "UNIFORM" for 0 => tau
 if len(sys.argv) >= 2:
     nShots = int(sys.argv[1])
 if len(sys.argv) >= 3:
-    strTestFilename = int(sys.argv[2])
+    strTestFilename = sys.argv[2]
 if len(sys.argv) >= 4:
-    if "False" == sys.argv[3]:
+    if "UNCORRELATED" == sys.argv[3]:
         bCorrelated = False
+if len(sys.argv) >= 5:
+    strAngleSetting == sys.argv[4]
 lstArgs = []
-if len(sys.argv) > 4:
-    lstArgs = sys.argv[4:]
+if len(sys.argv) > 5:
+    lstCmdArgs = sys.argv[5:]
 
 # load the user file
 testFile = open(strTestFilename, "r")
@@ -62,11 +73,11 @@ pSource = TestSource(lstArgs)
 strHost = "127.0.0.1"
 strD1Port = "37001"
 strD2Port = "37007"
-lstArgs = ["python","epyr_detector_process.py","D1", strHost, strD1Port]
-lstArgs.extend(lstArgs)
+lstArgs = ["python","epyr_detector_process.py","D1", strHost, strD1Port, strTestFilename, strAngleSetting]
+lstArgs.extend(lstCmdArgs)
 pDetector1 = subprocess.Popen(lstArgs)
-lstArgs = ["python","epyr_detector_process.py","D2", strHost, strD2Port]
-lstArgs.extend(lstArgs)
+lstArgs = ["python","epyr_detector_process.py","D2", strHost, strD2Port, strTestFilename, strAngleSetting]
+lstArgs.extend(lstCmdArgs)
 pDetector2 = subprocess.Popen(lstArgs)
 
 # create connections to the newly-created detector processes
@@ -100,8 +111,9 @@ while None == pDetector1.poll() and None == pDetector2.poll():
     pD2Socket.send(strPhoton2+"\n")
     pD2Socket.send(strEnd+"\n")
     fTime += random.random()
-    print fTime
-    time.sleep(0.01)    # slow things down for more robust communication
+    if 0 == nCount%1000:
+        print str(nCount)+" "+str(fTime)
+    time.sleep(0.001)    # slow things down for more robust communication
 
 try:    # shut down child processes
     pDetector1.kill()

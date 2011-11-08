@@ -18,26 +18,34 @@ import random
 import socket
 import sys
 
-if len(sys.argv) < 4:   # rudimentary sanity check
-    print "Syntax is: python detector.py strDetectorName strHost strPort <other>"
+if len(sys.argv) < 5:   # rudimentary sanity check
+    print "Syntax is: python detector.py strDetectorName strHost strPort strTestFilename <other>"
     sys.exit(-1)
 
 try:
+    strDetector = sys.argv[1]    # convenience identifier for this detector
+    strHost = sys.argv[2]        # localhost only
+    strPort = int(sys.argv[3])   # Arbitrary non-privileged port
+    strTestFilename = sys.argv[4]# epyr_test.py by default
+    strSettings = sys.argv[5]    # type of angles to use (EPR or UNIFORM)
+    bEPRAngles = False
+    if strSettings == "EPR":
+        bEPR = True
+    elif strSettings != "UNIFORM":
+        raise Exception()
+    
     # load the user file
-    testFile = open("epyr_test.py", "r")
+    testFile = open(strTestFilename, "r")
     exec(testFile)
     testFile.close()
 
     lstAngles = [0, math.pi/4, math.pi/8, 3*math.pi/8]
 
-    strDetector = sys.argv[1]
-    strHost = sys.argv[2]        # localhost only
-    strPort = int(sys.argv[3])   # Arbitrary non-privileged port
     outFile = open("detector_"+strDetector.lower()+"_output.txt", "w")
         
     lstArgs = []
-    if len(sys.argv) > 4:
-        lstArgs = sys.argv[4:]
+    if len(sys.argv) > 6:
+        lstArgs = sys.argv[6:]
     pDetector = TestDetector(strDetector, lstArgs)
     print "Detector: "+strDetector
 
@@ -69,9 +77,12 @@ try:
                     
             if 0 < len(strPhoton):
                 nIndex = int(random.random()*len(lstAngles))
-                fDetectorAngle = lstAngles[nIndex]
-                (nTime, fDetectorAngle, strResult) = pDetector.ProcessPhoton(fDetectorAngle, strPhoton)
-                outFile.write(str(nTime)+" "+str(180*fDetectorAngle/math.pi)+" "+strResult+"\n")
+                if bEPRAngles:
+                    fDetectorAngle = lstAngles[nIndex]
+                else:
+                    fDetectorAngle = 2*math.pi*random.random()
+                (fTime, fDetectorAngle, strResult) = pDetector.ProcessPhoton(fDetectorAngle, strPhoton)
+                outFile.write(str(fTime)+" "+str(180*fDetectorAngle/math.pi)+" "+strResult+"\n")
         except Exception, e:
             print e
 
