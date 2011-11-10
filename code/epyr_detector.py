@@ -27,18 +27,19 @@ class EPyRDetector(object):
         strResult = "R"
 
         lstPhoton = strPhoton.split(":")
-        fTime = float(lstPhoton[0])
-        fPolarizationAngle = float(lstPhoton[1])
+        nCount = int(lstPhoton[0])
+        fTime = float(lstPhoton[1])
+        fPolarizationAngle = float(lstPhoton[2])
         
         fProbability = math.cos(fPolarizationAngle-fDetectorAngle)**2
         
         if fProbability < random.random():
             strResult = "L"
             
-        return (fTime, fDetectorAngle, strResult)
+        return (nCount, fTime, fDetectorAngle, strResult)
         
 if __name__ == "__main__":
     #sanity test
     pDetector = EPyRDetector("Test", [])
-    print pDetector.ProcessPhoton(0.0, "0.1234:1.2345")
+    print pDetector.ProcessPhoton(0.0, "5:0.1234:1.2345")
     

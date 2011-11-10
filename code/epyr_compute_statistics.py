@@ -5,10 +5,11 @@ def readData(strFilename):
     inFile = open(strFilename, "r")
     for strLine in inFile:
         lstLine = strLine.split()
-        fTime = float(lstLine[0])
-        strAngle = lstLine[1]
-        strResult = lstLine[2]
-        lstData.append((fTime, strAngle, strResult))
+        nCount = int(lstLine[0])
+        fTime = float(lstLine[1])
+        strAngle = lstLine[2]
+        strResult = lstLine[3]
+        lstData.append((nCount, fTime, strAngle, strResult))
     inFile.close()
     return lstData
 
@@ -29,10 +30,10 @@ nHit = 0
 nJLast = 0
 for nI in range(0, len(lstD1)):
     
-    (fT1, strA1, strR1) = lstD1[nI]
+    (nCount, fT1, strA1, strR1) = lstD1[nI]
     bFound = False
     for nJ in range(nJLast, len(lstD2)):
-        (fT2, strA2, strR2) = lstD2[nJ]
+        (nCount, fT2, strA2, strR2) = lstD2[nJ]
         if abs(fT1-fT2) < 0.01:
             bFound = True
             nJLast = nJ

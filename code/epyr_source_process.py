@@ -58,6 +58,7 @@ if len(sys.argv) >= 4:
 if len(sys.argv) >= 5:
     strAngleSetting == sys.argv[4]
 lstArgs = []
+lstCmdArgs = []
 if len(sys.argv) > 5:
     lstCmdArgs = sys.argv[5:]
 
@@ -88,6 +89,7 @@ pD2Socket.connect((strHost, int(strD2Port)))
 
 fTime = 0.0                   # keep track of time
 strEnd = "==END_OXF_PHOTON==" # end of photon flag (keep comms one-way)
+strDone = "==END_OXF_RUN=="   # end of run flag (keep comms one-way)
 nCount = 0
 while None == pDetector1.poll() and None == pDetector2.poll():
     
@@ -97,9 +99,9 @@ while None == pDetector1.poll() and None == pDetector2.poll():
 
     # generate pair of appropriate type
     if bCorrelated:
-        (strPhoton1, strPhoton2) = pSource.GenerateCorrelatedPair(fTime)
+        (strPhoton1, strPhoton2) = pSource.GenerateCorrelatedPair(nCount, fTime)
     else:
-        (strPhoton1, strPhoton2) = pSource.GenerateUncorrelatedPair(fTime)
+        (strPhoton1, strPhoton2) = pSource.GenerateUncorrelatedPair(nCount, fTime)
         
     if -1 != strPhoton1.find(strEnd) or -1 != strPhoton2.find(strEnd):
         print "Illegal string found in photon: "+strEnd
@@ -116,6 +118,15 @@ while None == pDetector1.poll() and None == pDetector2.poll():
     time.sleep(0.001)    # slow things down for more robust communication
 
 try:    # shut down child processes
+    while True:
+        time.sleep(1.0)    # slow things down for more robust communication
+        if None == pDetector1.poll():
+            pD1Socket.send(strDone+"\n")
+        elif None == pDetector2.poll():
+            pD2Socket.send(strDone+"\n")
+        else:
+            break
+            
     pDetector1.kill()
     pDetector2.kill()
 except Exception, e:
