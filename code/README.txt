@@ -1,3 +1,6 @@
+Copyright (C) 2011 Predictive Patterns Software Inc
+License: GPL2
+
 This is a simple framework for evalutating local realistic models of
 two-photon correlation.  I developed it for my own entertainment and
 may document it more thoroughly at some future date.
